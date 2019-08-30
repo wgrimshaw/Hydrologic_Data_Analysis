@@ -25,7 +25,9 @@ Compare your list to other groups' lists.
 1. Navigate to https://www.data-to-viz.com/.
 2. Think of a dataset that you or someone in your field might want to visualize. What types of variables does this dataset contain? What information might you want to convey with a visualization?
 
-<add notes here>
+Populations for water utilities over time and expenditures on capital improvement projects. Both would be continuous numerical data.
+
+Potentially also cities on an axis of percent population change vs bond issuance.
 
 3. Scroll to the "Explore" section of the website. Follow the flow chart to find a type of graph that would suit your data. Click for more information and a link to the R Graph Gallery. If there are multiple options for graphing your data, how might you choose between them?
 
@@ -94,7 +96,7 @@ Work with your group to reproduce the graph. This may require dividing up tasks 
 
 ```{r}
 # Import data
-EnoDischarge <- readNWISdv(siteNumbers = "02096500",
+EnoDischarge <- readNWISdv(siteNumbers = "02096500", # selecting eno river
                      parameterCd = "00060", # discharge (ft3/s)
                      startDate = "2009-08-01",
                      endDate = "2019-07-31")
@@ -120,6 +122,8 @@ print(EnoPlot)
 Challenge: 
 
 1. Build a plot called EnoPlot2.
+
+
 
 2. Add a column to your data frame for discharge in meters cubed per second
 
@@ -148,7 +152,12 @@ hint: package ggrepel includes a `geom_label_repel` function
 hint: Google "add legend two geom layers ggplot"
 
 ```{r}  
+## add new column with metric discharge
+EnoDischarge$Dischargem3 <- EnoDischarge$Discharge*0.0283
 
+## add rolling 30-day mean column
+EnoDischarge$30daymean <- rollmean(x = EnoDischarge$Dischargem3, k = 30,
+                                       fill = NA)
 
 ```
 
