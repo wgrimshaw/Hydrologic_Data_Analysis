@@ -50,6 +50,9 @@ Did you complete the form? (yes/no)
 6. Set up your work session. Check your working directory, load packages `tidyverse`,  `dataRetrieval`, and `lubridate`. Set your ggplot theme as theme_classic (you may need to look up how to set your theme).
 
 ```{r, message = FALSE}
+# keep warnings from appearing in knitted pdf
+knitr::opts_chunk$set(warning = FALSE)
+
 getwd()
 library(tidyverse)
 library(dataRetrieval)
