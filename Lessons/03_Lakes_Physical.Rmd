@@ -7,7 +7,7 @@ geometry: margin=2.54cm
 editor_options: 
   chunk_output_type: console
 ---
-b
+
 ## Lesson Objectives
 1. Investigate the concepts of lake stratification and mixing by analyzing monitoring data
 2. Apply data analytics skills to applied questions about physical properties of lakes
@@ -15,9 +15,13 @@ b
 
 ## Opening Discussion
 What is a lake? How does this differ from a stream, river, or wetland?
-
+** Lotic = flowing water
+** Lentic = still water
+** Wetlands generally have emergent vegetation
 What are the physical properties of lakes?
-
+** little flow in comparison to volume
+** slow enough flow that we think of it as not flowing
+** Land locked
 ## Session Set Up
 ```{r, message = FALSE}
 # Check working directory (should be project file location)
@@ -54,7 +58,7 @@ class(NTLdata$sampledate)
 # Remove rows that contain NAs in temperature column
 dim(NTLdata)
 NTLdata <- NTLdata %>%
-  drop_na(temperature_C)
+  drop_na(temperature_C) ## specifies only the temperature column
 dim(NTLdata)  
 
 # How many observations are there for each lake?
@@ -87,6 +91,7 @@ unique(Pauldata$depth)
 unique(Peterdata$depth)
 unique(Tuesdaydata$depth)
 # Why didn't we use the "summary" function here?
+## Summary gives summary statistics for numerics, not all the different numbers
 ```
 
 ### Exploratory data visualization
@@ -102,6 +107,7 @@ print(TempvsDepth)
 
 How do temperatures at the surface compare to temperatures at the mid-depths and at the bottom?
 <add notes here>
+There is greater variation at the surface. Both the variation decreases and the temperature decreases with depth.
 
 Let's make a few data frames that include measurements from specific depths. We will choose dates only from the 2000s for ease of interpretation.
 
@@ -139,7 +145,7 @@ print(Tempplot.mixed)
 Now let's take out the 2 m and 9 m points and add in the 4 m and 6 m points. How do these compare to the surface and bottom temperatures?
 <add notes here>
 
-Here are are highlighting depths considered the **metalimnion** or **thermocline**.
+Here are are highlighting depths considered the **metalimnion** or **thermocline**. Rapid temperature decline with depth.
 ```{r}
 Tempplot.thermocline <- 
   ggplot(Pauldata.surface, aes(x = sampledate, y = temperature_C)) +
@@ -185,8 +191,8 @@ Pauldata.Aug2016 <- filter(Pauldata, sampledate == "2016-08-16")
 TempprofileMay2016 <- 
   ggplot(Pauldata.May2016, aes(x = temperature_C, y = depth)) +
   geom_line(color = "#081d58") +
-  geom_vline(xintercept = 4, lty = 2) +
-  scale_y_reverse(breaks = c(0, 2, 4, 6, 8, 10, 12)) +
+  geom_vline(xintercept = 4, lty = 2) + ## 4 degrees in maximum density of water
+  scale_y_reverse(breaks = c(0, 2, 4, 6, 8, 10, 12)) + ## to flip y axis
   scale_x_continuous(position = "top", limits = c(0, 30)) +
   labs(x = expression("Temperature "(degree*C)), y = "Depth (m)")
 print(TempprofileMay2016)
@@ -209,7 +215,7 @@ TempprofileAug2016 <-
             color = "#1d91c0")
 print(TempprofileAug2016)
 ```
-<add notes here>
+Epilimnion, then Thermocline, then Hypolimnion.
 
 In some places, the lines are not consistently smooth. What's going on here? How does this differ from your expectations of what the data should look like?
 <add notes here>
@@ -237,7 +243,7 @@ print(Tempprofiles2016)
 ```
 
 Paul Lake, like many lakes in temperate climates, is **dimictic**. What does this mean? What evidence do you see of this phenomenon in the graph? If you had data from the rest of the year, what would you expect to see?
-<add notes here>
+* Two mixing times throughout the year, spring and fall. When the column is mixed, the temperature is relatively consistent throughout.
 
 
 Let's put your prediction to the test. In 1993, the lake was sampled in November. Wrangle your data to capture this date and create a profile graph of that date.
@@ -246,7 +252,7 @@ Let's put your prediction to the test. In 1993, the lake was sampled in November
 ```
 
 Why does mixing occur in the spring and fall? What are the mechanisms that make this possible?
-<add notes here>
+Need a small enough density gradient that the wind can cause mixing throughout the water column. This generally happens in the spring and fall.
 
 ## Closing Discussion
 
