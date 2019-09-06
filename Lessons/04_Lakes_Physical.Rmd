@@ -17,6 +17,8 @@ editor_options:
 ## Opening Discussion
 We analyzed temperature profiles and seasonal changes on Wednesday. What were some key takeaway points about thermal stratification and mixing?
 
+> Mixing is most common in the epilimnion, top layer, and the hypolimnion, bottom layer of the lake. The stratified layers between the epilimnion and hypolimnion are called the metalimnion or thermocline. A well mixed layer is defined by having less than a 1 degree temperature change in one meter of depth change. The well mixed layers of the lake can extend when the density gradient within the lake becomes small enough that the wind can mix the layers of the lake. Many temperate lakes are dimictic, meaning they fully mix twice a year.
+
 ## Session Set Up
 ```{r, message = FALSE}
 getwd()
@@ -60,7 +62,7 @@ Tempprofiles2016 <-
   geom_point() +
   scale_y_reverse() +
   scale_x_continuous(position = "top") +
-  scale_color_viridis_c(end = 0.8, option = "magma") +
+  scale_color_viridis_c(end = 0.8, option = "magma") + # end to keep it from using yellow as an endpoint
   labs(x = expression("Temperature "(degree*C)), y = "Depth (m)") +
   theme(legend.position = "none")
 print(Tempprofiles2016)
@@ -96,15 +98,15 @@ print(Physicalprofiles2016)
 
 How do temperature profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Temperature increases steadily near the surface which more slowly increases the temperature at greater depths. Something occurs in mid August though that causes the surface temperature to decrease from late July.
 
 How do irradiance profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Irradiance increases until around Julian Day 190. Irradiance then drops dramatically and slowly increases in the later summer. The drop in irradiance could happen with algae growth. A less pronounced decrease would occur after the summer solstice.
 
 How do dissolved oxygen profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Deep chlorophyll maximum is the hump around 4 m depth. The sweet spot of high nutrient levels at depth and high irradiance near the surface (phytoplankton). Oxygen is consumed throughout the column through microbial respiration, so as soon as there is too little light for photosynthesis, there is no more dissolved oxygen.
 
 
 ## Data Analysis
@@ -119,11 +121,39 @@ Steps:
 3. Create 4 separate data frames, one for each month
 4. Run a linear regression for each data frame (see instructions above)
 5. For significant trends, calculate how many degrees the lake has warmed over the period of study
-5. Create a ggplot of surface temps by date and facet by month. Add `geom_smooth(se = FALSE, method = lm)` to the plot to display the regression line.
+6. Create a ggplot of surface temps by date and facet by month. Add `geom_smooth(se = FALSE, method = lm)` to the plot to display the regression line.
 
 ```{r}
+## use paul data across all years
+Pauldata <- Pauldata %>%
+  ## add month column
+  mutate(Month = month(sampledate)) %>%
+  ## filter to surface and months 5-8
+  filter(depth == 0 & Month %in% c(5:8))
 
+PaulMay <- filter(Pauldata, Month == 5)
+PaulJune <- filter(Pauldata, Month == 6)
+PaulJuly <- filter(Pauldata, Month == 7)
+PaulAugust <- filter(Pauldata, Month == 8)
 
+## linear regression for each month separately
+Mayregression <- lm(data = PaulMay, temperature_C ~ year4)
+Juneregression <- lm(data = PaulJune, temperature_C ~ year4)
+Julyregression <- lm(data = PaulJuly, temperature_C ~ year4)
+Augustregression <- lm(data = PaulAugust, temperature_C ~ year4)
+
+## output of linear regression
+summary(Mayregression) # not significant
+summary(Juneregression) # not significant
+summary(Julyregression) # significant, 0.06 degrees per year
+summary(Augustregression) # significant, 0.0405 degrees per year
+
+## faceted plot
+
+ggplot(Pauldata, aes(x = year4, y = temperature_C)) +
+  geom_point() +
+  facet_grid(rows = vars(Month)) +
+  geom_smooth(method = lm, se = FALSE)
 
 ```
 
