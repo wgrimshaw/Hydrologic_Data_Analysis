@@ -16,6 +16,13 @@ editor_options:
 ## Opening Discussion
 What are the physical properties of streams and rivers? What variables might be of interest?
 
+> Discharge
+> Velocity
+> Bed Material -> erosion -> turbidity
+> Temperature
+> Mixing
+> Depth/stage
+
 ## Session Set Up
 
 ```{r, message = FALSE}
@@ -96,7 +103,7 @@ We will access the last 10 years of data for our purposes today. Alternatively, 
 # Import data
 EnoDischarge <- readNWISdv(siteNumbers = "02096500",
                      parameterCd = "00060", # discharge (ft3/s)
-                     startDate = "2009-09-01",
+                     startDate = "2009-09-01", # leave as "" to get all data
                      endDate = "2019-08-31")
 
 VerdeDischarge <- readNWISdv(siteNumbers = "09504000",
@@ -200,11 +207,11 @@ print(CombinedPlot)
 
 How does the magnitude of discharge compare for these rivers?
 
->
+> It is difficult to compare the baseflow of the five rivers using the plots created, but the Eno River has the largest discharge events. The Bitterroot may have the largest average flow.
 
 Which of these rivers have a seasonal cycle of discharge? How might you explain the presence and timing of seasonal cycles based on climatic conditions?
 
->
+> The Bitterroot is especially seasonal, as is the Nehalem.
 
 Hypothetical question: If you wanted to create a ggplot using facets instead of `plot_grid`, how would you go about wrangling your dataset differently? 
 
@@ -213,7 +220,7 @@ Hypothetical question: If you wanted to create a ggplot using facets instead of 
 ## Defining "typical" discharge pattern
 Let's take the Bitterroot River, which displays a clear seasonal cycle. Let's define the median discharge on a given day of year and overlay this onto the range experienced. We will take a longer period of record this time.
 ```{r}  
-BitterrootDischarge.Historical <- readNWISdv(siteNumbers = "12344000",
+BitterrootDischarge.Historical <- readNWISdv(siteNumbers = "02096500",
                      parameterCd = "00060", # discharge (ft3/s)
                      startDate = "1969-09-01",
                      endDate = "2019-08-31")
