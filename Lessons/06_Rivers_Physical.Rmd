@@ -16,6 +16,10 @@ editor_options:
 ## Opening Discussion
 How is climate change impacting discharge in streams and rivers? What are the new and ongoing challenges faced by these impacts in watersheds?
 
+> Increased variability and unpredictability of discharge/storms. Decreased snowpack from increased temperatures and less predictability of when the snowpack melts.
+
+> Impacts ecology, hydropower generation, irrigation, flood mitigation.
+
 ## Session Set Up
 
 ```{r, message = FALSE}
@@ -73,12 +77,14 @@ EnoDischarge <-
   EnoDischarge %>%
   mutate(Year = year(Date))
 
+## Note that the data begin in September, so the first year is incomplete
+
 EnoRecurrence <- 
   EnoDischarge %>%
   filter(Year < 1993) %>%
   group_by(Year) %>%
   summarise(PeakDischarge = max(Discharge)) %>% 
-  mutate(Rank = rank(-PeakDischarge), 
+  mutate(Rank = rank(-PeakDischarge), # rank normally gives largest rank to largest number
          RecurrenceInterval = (length(Year) + 1)/Rank, 
          Probability = 1/RecurrenceInterval)
 
@@ -137,11 +143,15 @@ Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log(500)
 
 What differences did you see for the recurrence intervals built under different periods of record? How would your prediction of flood events differ if you were to use these models for forecasting purposes? 
 
->
+> The smaller period of record underestimated the magnitude of discharges with long recurrence intervals.
 
 What would you recommend for a watershed manager seeking to build the most accurate recurrence interval model for the Eno River?
 
-> 
+> Ask an extremely old resident of the area the five largest storms that they remember and how they compare to a recent storm.
+
+> Use longest record available and possibly records from nearby streams, including a trend analysis to see if the discharge is stationary.
+
+> Moving window analysis.
 
 
 ### Examining the effects of urbanization on discharge
@@ -164,6 +174,58 @@ SaladoPlot <-
 print(SaladoPlot)
 
 # add more code here: 
+
+SaladoDischarge <- 
+  SaladoDischarge %>%
+  mutate(Year = year(Date))
+
+## Note that the data begin in September, so the first year is incomplete
+
+SaladoRecurrence.old <- 
+  SaladoDischarge %>%
+  filter(Year < 1990) %>%
+  group_by(Year) %>%
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge), # rank normally gives largest rank to largest number
+         RecurrenceInterval = (length(Year) + 1)/Rank, 
+         Probability = 1/RecurrenceInterval)
+
+## Recent 30 years
+SaladoRecurrence.recent <- 
+  SaladoDischarge %>%
+  filter(Year > 1989) %>%
+  group_by(Year) %>%
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge), # rank normally gives largest rank to largest number
+         RecurrenceInterval = (length(Year) + 1)/Rank, 
+         Probability = 1/RecurrenceInterval)
+
+SaladoRecurrencePlot.both <- 
+  ggplot(SaladoRecurrence.old, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() +
+  geom_point(data = SaladoRecurrence.recent, color = "#02818a",
+             aes(x = RecurrenceInterval, y = PeakDischarge))
+print(SaladoRecurrencePlot.both)
+
+SaladoRecurrencePlot.recent <- 
+  ggplot(SaladoRecurrence.recent, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() #+
+  #scale_x_log10() 
+print(SaladoRecurrencePlot.recent)
+
+Salado.RImodel.old <-
+  lm(data = SaladoRecurrence.old, PeakDischarge ~ log(RecurrenceInterval))
+summary(Salado.RImodel.old)
+
+Salado.RImodel.recent <-
+  lm(data = SaladoRecurrence.recent, PeakDischarge ~ log(RecurrenceInterval))
+summary(Salado.RImodel.old)
+
+#What is the discharge for a 100-year flood in this system? a 500-year flood?
+Salado.RImodel.old$coefficients[1] + Salado.RImodel.old$coefficients[2]*log(100)
+Salado.RImodel.old$coefficients[1] + Salado.RImodel.old$coefficients[2]*log(500)
+Salado.RImodel.recent$coefficients[1] + Salado.RImodel.recent$coefficients[2]*log(100)
+Salado.RImodel.recent$coefficients[1] + Salado.RImodel.recent$coefficients[2]*log(500)
 
 ```
 
