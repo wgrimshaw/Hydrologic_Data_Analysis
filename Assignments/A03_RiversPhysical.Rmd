@@ -1,6 +1,6 @@
 ---
 title: "Assignment 3: Physical Properties of Rivers"
-author: "Student Name"
+author: "Walker Grimshaw"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,9 +28,32 @@ The completed exercise is due on 18 September 2019 at 9:00 am.
 4. Import a data frame called "MysterySiteDischarge" from USGS gage site 03431700. Upload all discharge data for the entire period of record. Rename columns 4 and 5 as "Discharge" and "Approval.Code". DO NOT LOOK UP WHERE THIS SITE IS LOCATED. 
 5. Build a ggplot of discharge over the entire period of record. 
 
-```{r}
+```{r, message = FALSE}
+# keep warnings from appearing in knitted pdf
+knitr::opts_chunk$set(warning = FALSE)
 
+getwd()
 
+library(tidyverse)
+library(dataRetrieval)
+library(cowplot)
+library(lubridate)
+
+theme_set(theme_bw())
+
+## Load data
+MysterySiteDischarge <- readNWISdv(siteNumbers = "03431700",
+                                   parameterCd = "00060", # discharge (ft3/s)
+                                   startDate = "",
+                                   endDate = "")
+## Change column names
+names(MysterySiteDischarge)[4:5] <- c("Discharge", "Approval.Code")
+
+MysterySiteDischarge.plot <- 
+  ggplot(data = MysterySiteDischarge, aes(x = Date, y = Discharge)) +
+  geom_line() +
+  labs(x = "Year", y = "Discharge (CFS)")
+print(MysterySiteDischarge.plot)  
 ```
 
 ## Analyze seasonal patterns in discharge
@@ -39,8 +62,24 @@ The completed exercise is due on 18 September 2019 at 9:00 am.
 6. Create a new data frame called "MysterySiteDischarge.Pattern" that has columns for Day.of.Year, median discharge for a given day of year, 75th percentile discharge for a given day of year, and 25th percentile discharge for a given day of year. Hint: the summarise function includes `quantile`, wherein you must specify `probs` as a value between 0 and 1.
 7. Create a plot of median, 75th quantile, and 25th quantile discharges against day of year. Median should be black, other lines should be gray. 
 ```{r}
+## Add year and day columns
+MysterySiteDischarge <- MysterySiteDischarge %>%
+  mutate(Year = year(Date)) %>%
+  mutate(Day.of.Year = yday(Date))
 
+MysterySiteDischarge.Pattern <- MysterySiteDischarge %>%
+  group_by(Day.of.Year) %>%
+  summarize(Median = median(Discharge),
+            Q75 = quantile(Discharge, p = 0.75),
+            Q25 = quantile(Discharge, p = 0.25))
 
+## Plot
+ggplot(data = MysterySiteDischarge.Pattern,
+       aes(x = Day.of.Year)) +
+  geom_line(aes(y = Median)) +
+  geom_line(aes(y = Q25), color = "gray") +
+  geom_line(aes(y = Q75), color = "gray") +
+  labs(y = "Discharge (CFS)", x = "Day of Year")
 ```
 
 8. What seasonal patterns do you see? What does this tell you about precipitation patterns and climate in the watershed?
