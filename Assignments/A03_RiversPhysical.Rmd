@@ -130,33 +130,50 @@ ggplot(mapping = aes(x = RecurrenceInterval)) +
 ## Recurrence Interval Models, logarithmic
 
 ## First 30
+MysteryModel.30.log <- lm(data = MysterySite.Annual.30yr,
+                      PeakDischarge ~ log(RecurrenceInterval))
+summary(MysteryModel.30.log)
+MysteryModel.30.log$coefficients[1] +
+  MysteryModel.30.log$coefficients[2]*log(100)
+# low R squared so try without logarithm
 MysteryModel.30 <- lm(data = MysterySite.Annual.30yr,
                       PeakDischarge ~ RecurrenceInterval)
 summary(MysteryModel.30)
+# better R squared, but does it makes physical sense?
+MysteryModel.30$coefficients[1] +
+  MysteryModel.30$coefficients[2]*100
 
 ## Full Record
+MysteryModel.Full.log <- lm(data = MysterySite.Annual.Full,
+                      PeakDischarge ~ log(RecurrenceInterval))
+summary(MysteryModel.Full.log)
+MysteryModel.Full.log$coefficients[1] +
+  MysteryModel.Full.log$coefficients[2]*log(100)
+
 MysteryModel.Full <- lm(data = MysterySite.Annual.Full,
                       PeakDischarge ~ RecurrenceInterval)
 summary(MysteryModel.Full)
+MysteryModel.Full$coefficients[1] +
+  MysteryModel.Full$coefficients[2]*100
 ```
 
 12. How did the recurrence interval plots and predictions of a 100-year flood differ among the two data frames? What does this tell you about the stationarity of discharge in this river?
 
-> 
+> The 30 year log model predicts a 100-year flood of 5,759 cfs while the full log model predicts a 100-year flood of 4844 cfs. The 30 year linear model predicts a 100-year flood of 21,880 cfs while the full linear model predicts a 100-year flood of 13,226 cfs. The linear models have higher R-squared values that fit the data better, but physically, the logarithmic models make more sense. Either way, the models indicate that using the full record predicts a 100-year flood of lesser magnitude than using only the first 30 years. The river discharge is likely non-stationary, with decreasing flow over time.
 
 ## Reflection
 13. What are 2-3 conclusions or summary points about river discharge you learned through your analysis?
 
->
+> The seasonality of river discharge depends greatly on the geographic location of the river and the climate of that area. Relatedly, the discharge pattern of a river may change over time due to climate change or other long-term climatic factors. It is difficult to predict the magnitude of large, rare flood events from historical records as well.
 
 14. What data, visualizations, and/or models supported your conclusions from 13?
 
-> 
+> The class lessons in concert with the analysis here, especially the discharge over time figures, show how discharge changes with season and over time. The seasonal statistical flow figure from this analysis especially showed the seasonal pattern of the river in question. The recurrence interval plot and associated models however show how difficult it is to predict rare floods and even what model would fit this historical data best to be used for future predictions.
 
 15. Did hands-on data analysis impact your learning about discharge relative to a theory-based lesson? If so, how?
 
->
+> As with the lake lessons, I think struggling through an actual river discharge analysis and trying to think about where this mystery river is were helpful for a deeper and more analytical approach to studying discharge. The combination made it so I could neither just plug numbers into formulae without thinking about their real world meaning nor just memorize a few concepts of river hydrology.
 
 16.	How did the real-world data compare with your expectations from theory?
 
-> I assumed a logarthimic relationship would always provide the best model for annual peak discharge from recurrence interval. However, for the data from this site, a linear model was a better predictor of the annual peak discharge.
+> I assumed a logarthimic relationship would always provide the best model for annual peak discharge from recurrence interval. However, for the data from this site, a linear model was a better predictor of the annual peak discharge because of the two storm events in 1990 and 2010 that threw off the logarithmic model.
