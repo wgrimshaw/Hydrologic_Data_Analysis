@@ -16,6 +16,8 @@ editor_options:
 ## Opening Discussion
 What is water quality? What are some of the things it encompasses? 
 
+> Physical, chemical, and biological characteristics of water. It is complementary to water quantity and can be used to determine for what uses the water is fit.
+
 ## Session Set Up
 
 ```{r, message = FALSE}
@@ -38,11 +40,13 @@ theme_set(theme_classic())
 
 Why are these important measures of water quality?
 
->
+> Indicate what organisms or species may be able to live in the water.
 
 What types of disturbances can impact these parameters?
 
->
+> pH: acid rain, acid mine drainage, other pollution.
+
+> specific conductance: ionic strength can also indicate what organisms can live in the water and whether is needs to be treated before human consumption. salt water intrusion could impact ionic strength, as could anthropogenic pollution.
 
 ## How does mining impact specific conductance and pH?
 
@@ -105,15 +109,15 @@ print(SpC.plot)
 
 What differences do you see?
 
->
+> The Kanawha River has been monitored much longer than Twelvepole Creek. The pH of Kanawha appears to increase after approximately 1967. There are two few data points taken from Twelvepole creek to have high confidence about a trend in the pH. The specific conductivity of the Kanawha was stable before 1960 and after about 1972, but it has high and erratic peaks between those years. After 1970, the conductance of both rivers was more stable, whith the conductance of the Kanawha consistently higher than that of Twelvepole.
 
 Why might mining be causing the changes you see?
 
->
+> May have caused the dip in pH of the Kanawha and more pollutants would increase conductivity.
 
 What is the data frequency of these water quality samples? Why don't we have daily values? How does this inform your interpretation of the data?
 
->
+> Roughly monthly. It may have been expensive and/or cumbersome to collect such data in the 60s and 70s.
   
 ## What can legislative protections do for water quality?
 
@@ -150,7 +154,7 @@ print(SpC.plot)
 
 Discuss with your group about the differences you see.
 
->
+> While the parameters leveled off for the Kanawha river after 1977, pH in Twelvepole Creek declined substantially after 1977.
 
 ## Were remediation efforts successful?
 
@@ -208,11 +212,11 @@ t.test(x, y)
 
 How would you communicate these results to a manager? 
 
->
+> The average annual specific conductance before the SMCRA was significantly higher than the average annual specific conductance after the SMCRA in Kanawha River.
 
 What can you say with data visualization that you can't say with just the statistical tests?
 
->
+> Easier to see the difference in magnitude.
 
 
 ## How have individual ions changed over the this timeperiod?
@@ -234,15 +238,23 @@ Manganese.plot <- ggplot(Manganese.dat, aes(x = Date, y = Manganese_ugL)) +
   ggtitle("Manganese Concentrations in the Kanawha River")
 
 print(Manganese.plot)
+
+Manganese.points <- ggplot(Manganese.dat, aes(x = Date, y = Manganese_ugL)) +
+  geom_point() +
+  geom_vline(xintercept = 1977, color = "grey", alpha = 0.8, lwd = 2, lty = 2) + 
+  labs(y = expression("Manganese ("*mu*g*l^-1*")")) +
+  ggtitle("Manganese Concentrations in the Kanawha River")
+
+print(Manganese.points)
 ```
 
 Try plotting the manganese data with points instead of lines. Which do you prefer? Why?
 
->
+> Points.
 
 EPA drinking water standards for Manganese are 0.05 *_mg/L_*. How does the Kanawha stack up?
 
->
+> The Kanawha iss above the drinking water standards consistently.
 
 Take some time to look at other ions as well. Some suggestions are sulfate (```00945```), nitrate (```71851```), and iron (```71885```), or use the ```whatNWISdata()``` function to find others! EPA drinking water regulations can be found here: https://www.epa.gov/ground-water-and-drinking-water/national-primary-drinking-water-regulations. Pay close attention to units! Information about parameter codes can be found in the dataframe ```parameterCdFile```.
 

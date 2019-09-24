@@ -16,6 +16,9 @@ editor_options:
 ## Opening Discussion
 What are indicator species? Why are they helpful in thinking about water quality?
 
+> Indicator species are species that may be relatively easy to monitor that indicate the overall quality of a body of water without needing to measure specific constituents. If we are worried about water quality because of its impact on the ecosystem, an indicator species may give a more direct measure of the outcome of interest than many other parameters.
+
+> May have wanted a discussion of indicator bacterial species, which are species that may indicate the presence of other, harder to measure, species.
 
 ## Session Set Up
 
@@ -36,7 +39,7 @@ theme_set(theme_classic(base_size = 12))
 
 ## Microbiological indicators
 
-Bacteria is present in almost every stream on earth. Most bacteria are harmless, but some are extremely dangerous to human health.Typical sources of bacterial contamination include waste water treatment plants, animal manure lagoons, and septic systems. There are multiple ways that bacteria can be measured for water quality.
+Bacteria is present in almost every stream on earth. Most bacteria are harmless, but some are extremely dangerous to human health. Typical sources of bacterial contamination include waste water treatment plants, animal manure lagoons, and septic systems. There are multiple ways that bacteria can be measured for water quality.
 
 1) **Total cell counts**. One way to measure the bacteria in water is to count the number of cells under a microscope in a given volumn of water (such as 1 mL). The units for this metric are cells ml^-1^.
 2) **Total coliforms**. Coliform bacteria are for the most part harmless microorganisms that live in animal intestines. Total coliforms are often used as a metric of how much raw or insufficiently treated sewage is making its way into a water body. The way these are measured are by taking a known volume of water, cultivating it in the lab, and counting the number of colonies that grow. Units for this metric are colony forming units (cfu) per 100 ml.
@@ -45,15 +48,15 @@ Bacteria is present in almost every stream on earth. Most bacteria are harmless,
 
 Why might it be helpful to have multiple ways to measure bacteria?
 
->
+> Differences in local resources, time intensiveness.
 
 Where and when do you think the biggest risks from harmful bacteria are?
 
->
+> After floods, during rainy seasons in developing countries.
 
 Measuring microbiogial indicators is more expensive and time consuming than some other water quality metrics. Where and when would you measure these?
 
->
+> When the water is intended for human consumption.
 
 ## How have improvements in sewage treatment affected water quality?
 
@@ -162,7 +165,7 @@ print(Microbes.plot)
 
 How would you use all of this data to talk about changes in microbial water quality from 1970 to 2000? What are the challenges?
 
->
+> Cannot tell from the plots created. Need to be able to more directly compare the parameters, as the parameters measured changed over time.
 
 Do you think water quality has improved between 1970 and 2000? Why or why not?
 
@@ -170,7 +173,7 @@ Do you think water quality has improved between 1970 and 2000? Why or why not?
 
 The city of Lawrence, MA is downstream of Lowell and gets its drinking water from the Merrimack River. Use the federal drinking water standard for Total Coliforms (https://www.epa.gov/ground-water-and-drinking-water/national-primary-drinking-water-regulations#Microorganisms) to comment on whether or not this water necessarily needs to be treated for bacteria.
 
->
+> This water absolutely needs to be treated for bacterial contamination. There are peaks thoughout the record far above the drinking water standard.
 
 ## Seasonal Trends in Water Quality
 
@@ -201,7 +204,7 @@ print(coli.seasons)
 
 When are total coliform concentrations highest? Why might this be?
 
->
+> Near the end of the summer and early fall. WWTP discharges might be greatest in comparison to the natural stream discharges in these months. Alternatively, if this is when there is more precipitation, there may be CSOs or the WWTPs may be running above capacity.
 
 Does this pattern also exist for the other microbial indicators?
 
@@ -215,11 +218,11 @@ The USGS site that we got the water quality data from does not have discharge da
 
 Which site's discharge data would better indicate when the city of Lowell has exprienced a big rain event?
 
->
+> The site within the same distance of Lowell with a smaller drainage area, so the site on the concord river.
 
 What would a CSO event look like in the data?
 
->
+> High discharge at the same time as high bacterial count.
 
 ```{r pull_hydrology}
 
@@ -252,24 +255,24 @@ dygraph(DyDat) %>%
 Look through the data series and see if you can find some times when a CSO likely occured. Create a ggplot of the 3-4 weeks surrounding the event. (Hint: use the skeleton code available below )
 
 ```{r CSO_event, eval=FALSE}
-
-begin.date <- 
-end.date <- 
+## jan 17 1973
+begin.date <- as.Date("1973-01-01", format = "%Y-%m-%d")
+end.date <- as.Date("1973-01-31", format = "%Y-%m-%d")
   
-discharge.plot <- ggplot(data =  %>% 
-                   filter(), 
-                 aes(x = , y = )) +
+discharge.plot <- ggplot(data = discharge.dat %>% 
+                   filter(Date > begin.date & Date < end.date), 
+                 aes(x = Date, y = Discharge_cfs)) +
             geom_line() +
-            scale_x_date(limits =  , name  = )
+            scale_x_date(limits =  c(begin.date, end.date), name  = "date")
   
-microb.plot <- ggplot(data =  %>% 
+microb.plot <- ggplot(data = microb.dat %>% 
                    filter(), 
-                 aes(x = )) +
-            geom_point(aes(y = ))+
-            scale_x_date(limits =  , name = )
+                 aes(x = Date)) +
+            geom_point(aes(y = Total.coli))+
+            scale_x_date(limits =  c(begin.date, end.date), name = "date")
   
   
-plot_grid( , , ncol = 1)
+plot_grid( discharge.plot, microb.plot, ncol = 1)
 
 ```
 
