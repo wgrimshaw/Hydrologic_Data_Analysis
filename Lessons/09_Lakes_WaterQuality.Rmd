@@ -27,9 +27,9 @@ library(lubridate)
 library(LAGOSNE)
 
 theme_set(theme_classic())
-options(scipen = 100)
+options(scipen = 100) ## how many decimal places we want to show before displaying as eXXXX
 
-lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
+lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE) ## only have to do once on a computer to get data to local drive
 
 ```
 
@@ -49,12 +49,12 @@ LAGOSdata <- lagosne_load()
 names(LAGOSdata)
 
 # If the package installation and data download has not worked, use this code: 
-# load(file = "./Data/Raw/LAGOSdata.rda")
+load(file = "./Data/Raw/LAGOSdata.rda")
 
 # Exploring the data types that are available
-LAGOSlocus <- LAGOSdata$locus
-LAGOSstate <- LAGOSdata$state
-LAGOSnutrient <- LAGOSdata$epi_nutr
+LAGOSlocus <- LAGOSdata$locus ## metadata about each lake
+LAGOSstate <- LAGOSdata$state ## simple metadata for each state with lake data
+LAGOSnutrient <- LAGOSdata$epi_nutr # nutrient data only available for the epilimnion
 
 # Tell R to treat lakeid as a factor, not a numeric value
 LAGOSlocus$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
@@ -116,8 +116,10 @@ LAGOStrophic <-
   mutate(sampleyear = year(sampledate), 
          samplemonth = month(sampledate), 
          season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
-  drop_na(chla:secchi)
+  ## function quarter() knows to look at the month part of sampledate
+  drop_na(chla:secchi) ## remove entire row if any of the three columns have NA values
 
+## quarter function assigned numbers (as factors) to the seasons
 levels(LAGOStrophic$season) <- c("Winter", "Spring", "Summer", "Fall")
 ```
 
@@ -150,7 +152,7 @@ print(tpbymonth)
 
 What do you notice about the seasonality of these variables? If we were to characterize a lake based on the value of a given variable, how might seasonality affect our interpretations?
 
->
+> seasonality has a greater impact on chlorophyll concentration that total P because sunlight and P are needed for phytoplankton growth.
 
 ### Calculating trophic state index
 Let's add a TSI value calculated from each of the three variables to the data frame. Let's also add a column that designates the lake as oligotrophic, mesotrophic, eutrophic, or hypereutrophic based on the TSI.chl value. Make notes about the code as we go along.
