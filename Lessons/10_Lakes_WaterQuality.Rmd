@@ -54,7 +54,7 @@ In your group, look through the LAGOS-NE database and decide on 5 variables avai
 
 > Variable 4: Season
 
-> Variable 5: 
+> Variable 5: Buffer
 
 Wrangle LAGOSdata so that you have a new data frame that includes TN, TP, your five variables, and any other columns that would be useful for you (e.g., lake id numbers). Helpful functions may include `join`, `select`, `filter`, and `mutate`. Consider whether you want to use `drop_na` to retain complete cases of individual variables or entire rows.
 
@@ -64,15 +64,32 @@ LAGOSnutrient <- LAGOSdata$epi_nutr
 
 LAGOSlanduse <- LAGOSdata$buffer500m.lulc
 
+LAGOSlocus <- LAGOSdata$locus ## metadata about each lake
+
 # Tell R to treat lakeid as a factor, not a numeric value
-LAGOSlanduse$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
+LAGOSlanduse$lagoslakeid <- as.factor(LAGOSlanduse$lagoslakeid)
 LAGOSnutrient$lagoslakeid <- as.factor(LAGOSnutrient$lagoslakeid)
+LAGOSlocus$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
 
 ## from landuse, only keep row crops 82, pasture 81 for each set of years and the lake id
 
-LAGOS_crops_pasture <- 
+LAGOS_crops_pasture <- LAGOSlanduse %>%
+  select(lagoslakeid,
+         buffer500m_nlcd1992_pct_81,
+         buffer500m_nlcd1992_pct_82) %>%
+  mutate(Crop = buffer500m_nlcd1992_pct_82) 
 
+LAGOSnitrogen <- left_join(LAGOSnutrient, LAGOSlocus, by = "lagoslakeid")
 
+LAGOSnitrogen <-
+  left_join(LAGOSnitrogen, LAGOS_crops_pasture, by = "lagoslakeid") %>%
+  select(lagoslakeid, sampledate, chla, tn, secchi, toc,
+         gnis_name, Crop) %>%
+  mutate(sampleyear = year(sampledate), 
+         samplemonth = month(sampledate), 
+         season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
+  ## function quarter() knows to look at the month part of sampledate
+  drop_na(chla:toc) ## remove entire row if any of the three columns have NA values
 ```
 
 Examine potential correlations among your predictor variables. If your predictor variables are highly correlated with each other, your model will suffer from *multicollinearity,* essentially that two or more of your predictor variables provide redundant information. Model fit and accuracy of model coefficients suffer when multicollinearity is present. 
@@ -80,7 +97,10 @@ Examine potential correlations among your predictor variables. If your predictor
 1. Create a correlation plot for your 7 variables of interest (TN, TP, and the five predictor variables). What patterns do you see? (hint: function `corrplot` in the corrplot package. I like to use `upper = "ellipse"` inside the function).
 
 ```{r}
-
+LAGOSnitrogen.cor <- LAGOSnitrogen %>%
+  select(-sampledate, -gnis_name)
+LAGOS.cor <- cor(LAGOSnitrogen)
+corrplot(LAGOSnitrogen, method = "ellipse")
 ```
 
 What patterns do you see?

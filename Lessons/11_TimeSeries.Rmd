@@ -77,6 +77,7 @@ ClearCreekPlot <-
        axis.title.x = element_blank())
 print(ClearCreekPlot)
 
+## use the word cyclical to refer to longer time scales than seasonal time scales
 ```
 
 The simplest option to characterize a time series is a linear regression. 
@@ -93,11 +94,11 @@ print(ClearCreekRegressionPlot)
 
 Is a linear regression an appropriate model for the data in this case? Why or why not?
 
-> 
+> No, it is essentially just drawing an average line.
 
 Are there situations where it would be appropriate to use a linear regression to model a time series? If so, what is an example?
 
->
+> Data without seasonal trends, such as annual means, or a specific day of the year across time.
 
 
 ## Decomposing a time series dataset
@@ -105,7 +106,7 @@ Are there situations where it would be appropriate to use a linear regression to
 A given time series can be made up of several component series: 
 
 1. A **seasonal** component, which repeats over a fixed known period (e.g., seasons of the year, months, days of the week, hour of the day)
-2. A **trend** component, which quantifies the upward or downward progression over time. The trend component of a time series does not have to be monotonic.
+2. A **trend** component, which quantifies the upward or downward progression over time. The trend component of a time series *does not have to be monotonic*.
 3. An **error** or **random** component, which makes up the remainder of the time series after other components have been accounted for. This component reflects the noise in the dataset. 
 4. (optional) A **cyclical** component, which repeats over periods greater than the seasonal component. A good example of this in hydrologic data is El Niño Southern Oscillation (ENSO) cycles, which occur over a period of 2-8 years.
 
@@ -113,6 +114,10 @@ We first need to turn the discharge data into a time series object in R. This is
 
 Note: time series objects must be equispaced, which requires interpolation if the data have not been collected at regular intervals. In our case, we have daily data with no NAs in the data frame, so we don't need to worry about this.
 ```{r}
+## create time series object
+## must be regularly spaced data, in this case daily time set
+## check with table(diff(ClearCreekDischarge$Date))
+## may need to interpolate to fill in gaps if present
 ClearCreek_ts <- ts(ClearCreekDischarge[[4]], frequency = 365)
 
 ```
@@ -126,6 +131,7 @@ ClearCreek_Decomposed <- stl(ClearCreek_ts, s.window = "periodic")
 
 # Visualize the decomposed series. 
 plot(ClearCreek_Decomposed)
+# data = seasonal + trend +remainder
 
 # We can extract the components and turn them into data frames
 ClearCreek_Components <- as.data.frame(ClearCreek_Decomposed$time.series[,1:3])
