@@ -1,6 +1,6 @@
 ---
 title: "Assignment 6: Time Series Analysis"
-author: "Student Name"
+author: "Walker Grimshaw"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -27,8 +27,23 @@ The completed exercise is due on 11 October 2019 at 9:00 am.
 3. Set your ggplot theme (can be theme_classic or something else)
 4. Load the ClearCreekDischarge.Monthly.csv file from the processed data folder. Call this data frame ClearCreekDischarge.Monthly.
 
-```{r setup}
+```{r setup, message=FALSE}
+## prevent warnings in knitted pdf
+knitr::opts_chunk$set(warning = FALSE)
 
+getwd()
+
+packages <- c("tidyverse",
+              "lubridate",
+              "trend",
+              "dataRetrieval")
+invisible(lapply(packages, library, character.only = TRUE)) 
+
+theme_set(theme_bw())
+
+## Load Data
+ClearCreekDischarge.Monthly <-
+  read.csv("./Data/Processed/ClearCreekDischarge.Monthly.csv", header = T)
 ```
 
 ## Time Series Decomposition
@@ -38,14 +53,36 @@ The completed exercise is due on 11 October 2019 at 9:00 am.
 8. Decompose the time series using the `stl` function.
 9. Visualize the decomposed time series.
 ```{r}
+## 5
+EnoRiverDischarge <- readNWISdv(siteNumbers = "02085070",
+                     parameterCd = "00060", # discharge (ft3/s)
+                     startDate = "",
+                     endDate = "")
+names(EnoRiverDischarge)[4:5] <- c("Discharge", "Approval.Code")
 
+## 6
+ggplot(EnoRiverDischarge, aes(x = Date, y = Discharge)) +
+  geom_line() +
+  labs(y = "Discharge (CFS)")
+
+## 7
+## check spacing of data
+table(diff(EnoRiverDischarge$Date))
+## there is only one gap in the data of 39 days
+Eno_ts <- ts(EnoRiverDischarge[[4]], frequency = 365)
+
+## 8
+Eno_Decomposed <- stl(Eno_ts, s.window = "periodic")
+
+## 9
+plot(Eno_Decomposed)
 ```
 
 10. How do the seasonal and trend components of the decomposition compare to the Clear Creek discharge dataset? Are they similar in magnitude?
 
-> Seasonal: 
+> Seasonal: The seasonal component of the Eno Discharge is smaller about half the magnitude of the seasonal component of the Clear Creek Discharge, but it also inlcudes larger negative values. However, the total discharge of the Eno River is usually greater than the total discharge of the Clear Creek, so the seasonal discharge of the Eno is even less comparatively.
 
-> Trend: 
+> Trend: As with the Clear Creek Discharge, there is little trend in the Eno River Discharge. The trends of the two discharge sets have similarly small magnitudes.
 
 ## Trend Analysis
 Research question: Has there been a monotonic trend in discharge in Clear Creek over the period of study?
@@ -53,21 +90,28 @@ Research question: Has there been a monotonic trend in discharge in Clear Creek 
 11. Generate a time series of monthly discharge in Clear Creek from the ClearCreekDischarge.Monthly data frame. This time series should include just one column (discharge). 
 12. Run a Seasonal Mann-Kendall test on the monthly discharge data. Inspect the overall trend and the monthly trends. 
 ```{r}
+## Monthly time series
+ClearCreek_ts <- ts(ClearCreekDischarge.Monthly[[3]], frequency = 12)
 
+## Seasonal Mann Kendall
+ClearCreekTrend <- smk.test(ClearCreek_ts)
+
+ClearCreekTrend
+summary(ClearCreekTrend)
 ```
 
 13. Is there an overall monotonic trend in discharge over time? If so, is it positive or negative?
 
-> 
+> There is not an overall monotonic trend in the discharge of Clear Creek over time.
 
 14. Are there any monthly monotonic trends in discharge over time? If so, during which months do they occur and are they positive or negative?
 
-> 
+> The only statistically significant monotonic trends in Clear Creek discharge occur in June and July. In both months, discharge has increased over the period of record.
 
 ## Reflection
 15. What are 2-3 conclusions or summary points about time series you learned through your analysis?
 
->
+> 
 
 16. What data, visualizations, and/or models supported your conclusions from 12?
 
@@ -79,4 +123,4 @@ Research question: Has there been a monotonic trend in discharge in Clear Creek 
 
 18.	How did the real-world data compare with your expectations from theory?
 
->
+> The difference in seasonality of discharge between a Western, snow fed river and an Eastern river was very much what I expected. Trends are however more difficult to detect and similarly difficult to recognize visually in plots.
