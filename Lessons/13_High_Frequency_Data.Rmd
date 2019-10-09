@@ -17,7 +17,7 @@ editor_options:
 
 High frequency data is usually defined as frequencies significantly lower than daily (e.g. 5-minute, 15-minute, 1 hr etc). What types of hydrological and biological processes happen on this timescale that we might want to investigate?
 
->
+> Short lived storms can have a big impact but might not be caught by daily data. Contaminant transport, and other things that have big daily changes, like temperature and dissolved oxygen.
 
 
 ## Session Set Up
@@ -37,6 +37,9 @@ theme_set(theme_classic(base_size = 12))
 
 ```{r download data}
 
+## use readNWISuv for instantaneous values (anything more frequent than daily)
+## daily values would take the mean of the instantaneous values
+## time is all in UTC (greenwich)
 dischargedatTFC2018 <- readNWISuv(
   site = "02097280", #Third Fork Creek at Woodcroft Parkway Near Blands
   parameterCd = "00060",
@@ -70,9 +73,12 @@ plot_grid(
 
 ```
 
+
 The shape and size of river hydrographs following rain events can tell us how water moves through a watershed. Once rain falls, how does water get to a stream? What would the streamflow do?
 
->
+> Overland flow - either through pipes or "normal" overland flow. Percolation to groundwater and eventually to the river. Direct precipitation in the stream.
+
+> Baseflow generally follows the troughs of a hydrograph.
 
 
 _"Hydrograph separation is one of the most desperate analysis techniques in use in hydrology" - Hewlett & Hibbert 1967_
@@ -81,9 +87,13 @@ _"Hydrograph separation is one of the most desperate analysis techniques in use 
 ```{r baseflowseparation}
 TFCbaseflow <- BaseflowSeparation(
   dischargedatTFC2018$Flow_Inst, 
-  filter_parameter = 0.925, 
-  passes = 3
+  filter_parameter = 0.925, # default parameter
+  passes = 3 # default parameter
   )
+
+# creates baseflow tme series and quick flow time series
+
+## Now need to add back in time stamps with cbind()
 
 TFC2018 <- cbind(dischargedatTFC2018, TFCbaseflow)
 
@@ -101,28 +111,77 @@ dygraph(
     )
   ) %>% 
   dyRangeSelector()
+## quickflow is the majority of streamflow in the early part of the streamflow increase
+## baseflow is the majority of the flow after the overall streamflow peaks
+
 
 Export <- TFC2018 %>%
-  mutate(timestep = c(diff(as.numeric(dateTime)), NA_real_),
-         baseflowexport = bt * timestep,
-         quickflowexport = qft * timestep) %>%
+  mutate(timestep = c(diff(as.numeric(dateTime)), NA_real_), # difference in seconds, with NA appended at the end
+         baseflowexport = bt * timestep, # cubic feet
+         quickflowexport = qft * timestep) %>% # cubic feet
   summarize(BaseflowExport_cf = sum(baseflowexport, na.rm = T),
             QuickflowExport_cf = sum(quickflowexport, na.rm = T),
             TotalExport_cf = BaseflowExport_cf + QuickflowExport_cf)
-  
+
+percentbf <- Export$BaseflowExport_cf/Export$TotalExport_cf
+percentqf <- Export$QuickflowExport_cf/Export$TotalExport_cf
 ```
 
 What percentage of water is exported from this watershed as baseflow? What percentage as quickflow?
 
-> 
+> 51.9% baseflow, 48.1% quickflow.
 
 Repeat this analysis for Ellerbe Creek. How do the percentages compare?
 
->
+```{r}
+ECbaseflow <- BaseflowSeparation(
+  dischargedatEC2018$Flow_Inst, 
+  filter_parameter = 0.925, # default parameter
+  passes = 3 # default parameter
+  )
+
+# creates baseflow tme series and quick flow time series
+
+## Now need to add back in time stamps with cbind()
+
+EC2018 <- cbind(dischargedatEC2018, ECbaseflow)
+
+ggplot(EC2018, aes(x = dateTime, y = Flow_Inst)) + 
+  geom_line() +
+  # scale_y_log10() +
+  geom_line(mapping = aes(x = dateTime, y = bt), color = "darkorange4") +
+  geom_line(mapping = aes(x = dateTime, y = qft), color = "steelblue4")
+
+dygraph(
+  cbind(
+    Flow = with(EC2018, xts(Flow_Inst, order.by = dateTime)), 
+    Baseflow = with(EC2018, xts(bt, order.by = dateTime)), 
+    Quickflow = with(EC2018, xts(qft, order.by = dateTime))
+    )
+  ) %>% 
+  dyRangeSelector()
+## quickflow is the majority of streamflow in the early part of the streamflow increase
+## baseflow is the majority of the flow after the overall streamflow peaks
+
+
+ExportEC <- EC2018 %>%
+  mutate(timestep = c(diff(as.numeric(dateTime)), NA_real_), # difference in seconds, with NA appended at the end
+         baseflowexport = bt * timestep, # cubic feet
+         quickflowexport = qft * timestep) %>% # cubic feet
+  summarize(BaseflowExport_cf = sum(baseflowexport, na.rm = T),
+            QuickflowExport_cf = sum(quickflowexport, na.rm = T),
+            TotalExport_cf = BaseflowExport_cf + QuickflowExport_cf)
+
+percentbfEC <- ExportEC$BaseflowExport_cf/Export$TotalExport_cf
+percentqfEC <- ExportEC$QuickflowExport_cf/Export$TotalExport_cf
+```
+
+
+> 43.4% baseflow, 56.6% quickflow.
 
 What does this mean physically about the watershed?
 
->
+> The greater amount of quickflow in Ellerbee creek likely means there are more impervious surfaces than in the Third Fork Creek watershed. Both however are urban streams.
 
 ## Hydrologic Flashiness
 
@@ -130,13 +189,15 @@ A "flashy" stream increases in flow faster following a precipitation event.
 
 Refering to our previous work with baseflow separation, would you expect flashiness to increase or decrease with urbanization?
 
-> 
+> Flashiness should increase with urbanization and impervious surface development.
 
-What do you think "urban stream syndrom" refers to?
+What do you think "urban stream syndrome" refers to?
 
->
+> Flashy streams that that becme incised over time. Water quality parameters will also accompany urban stream syndrome.
 
 The Richards-Baker Index is an index of how flashy a stream is. It is calculated as $$RBI = (\sum_{j = 1}^n |Q_j - Q_{j-1}| / \sum_{j = 1}^n Q_j) / Catchment Area$$
+
+It is the sum of the differences in streamflow divided by the sum of flows at each time step, all divided by catchment area. Technically the Richar-Baker index does not normalize by catchment area.
 
 ```{r Flashiness}
 TFCsitedata <- readNWISsite(site = "02097280")
@@ -159,7 +220,29 @@ RBI_EC2018 <- (
 
 Which stream is flashier?
 
->
+> Ellerbee creek is the flashier creek.
+
+Repeat the process for a stream of our choice
+
+```{r}
+## First look for sites with the desired data
+sites <- whatNWISsites(parameterCD = "00060", statecd = "NC")
+View(sites)
+
+## check if the site has continuous data
+LTRdata <- whatNWISdata(site = "03517533")
+
+## Choosing LITTLE TENNESSEE RIVER AT TAPOCO, NC, site_no = 03517533
+dischargedatLTR2018 <- readNWISuv(
+  site = "03517533", #Third Fork Creek at Woodcroft Parkway Near Blands
+  parameterCd = "00060",
+  startDate = "2018-01-01", 
+  endDate = "2019-01-01"
+  ) %>% 
+  renameNWISColumns()
+
+```
+
 
 ## Chemical Flashiness
 
