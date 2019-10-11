@@ -26,7 +26,11 @@ Wednesday we used high-frequency hydrographs to learn about how water flows thro
 getwd()
 
 # install.packages("StreamPULSE")
-# install.packages("streamMetabolizer")
+#install.packages("streamMetabolizer", dependencies = T,
+#                 repos = c("https://owi.usgs.gov/R", "https://cran.rstudio.com"))
+
+#library(devtools)
+#install_github('streampulse/StreamPULSE')
 
 packages <- c(
   "dataRetrieval", 
@@ -86,11 +90,13 @@ ggplot(Potdat,
 
 Which of these rivers is more chemostatic?
 
->
+> Chemostatic means same chemical concentrations at differing flows. Crane Creek is more chemostatic than the Potomac.
 
 ## Hysteresis Loops
 
 Hysteresis occurs when the concentration varies with discharge in a different relationship on the rising and falling limbs of a storm. This can be caused by _flushing_ behavior or _dilution_ behavior. 
+
+Diluting means negative relationship between C and Q. Flushing is positive relationship between C and Q. Chemostatic is no relationship. Clockwise loop if 
 
 ```{r}
 dygraph(
@@ -101,6 +107,8 @@ dygraph(
   ) %>% 
   dySeries("Nitrate", axis = "y2") %>%
   dyRangeSelector()
+
+## nitrate concentration decreases with flow during storms
 ```
 
 Look at the storm that occured around February 1st. Do you expect this storm to be a flushing or a diluting storm?
@@ -119,25 +127,27 @@ ggplot(PotomacStorm, aes(x = Flow_Inst, y = Nitrate_mgl, color = dateTime)) +
 
 Did this storm exhibit clockwise or counterclockwise hysteresis?
 
->
+> Counterclockwise hysteresis. Rising limb has a lower concentration than the falling limb of the storm
 
 Which direction do hysteresis loops slope for diluting storms?
 
->
+> Down
 
 Which direction do hysteresis loops go for flushing storms?
 
->
+> Either direction.
 
 ## Using dissolved oxygen to estimate metabolism
 
 What is "ecosystem metabolism"?
 
->
+> How quickly a stream consumes organic matter
 
-Why would we want to know the *GPP* and *ER* of a river reach?
+Why would we want to know the *GPP*, gross primary productivity, and *ER*, Ecosystem respiration, of a river reach?
 
->
+> GPP - produce oxygen while fixing carbon to grow biomass
+> 
+> How much biomass, etc an ecosystem can support
 
 
 The StreamPulse project is a group of researchers around the world who are measuring oxygen concentrations in streams to determine the GPP and ER of many different types of streams and rivers from around the globe. We will be using data from their website for this class period. This project uses the R package `streamMetabolizer` to compute its estimates of metabolism and allows data download from its site using the `StreamPULSE` R package.
@@ -147,6 +157,7 @@ citation('streamMetabolizer')
 ```
 
 ```{r}
+# Use streamPULSE to create list of data, site information, and specs
 Enodat <- request_data(
   sitecode = "NC_Eno",
   variables = c('DO_mgL'),
@@ -154,7 +165,7 @@ Enodat <- request_data(
   enddate = "2016-09-20"
   )
 
-Eno.lon <- Enodat[[2]]$lon
+Eno.lon <- Enodat[[2]]$lon # variable corresponding to Eno longitude
 
 Eno.DO <- Enodat[[1]] %>%
   spread(value = value, key = variable) %>%
@@ -169,7 +180,7 @@ $\frac{dO_2}{dt} = P_t + R_t + D_t$
 
 What are P~t~, R~t~ and D~t~? What are these parameters functions of?
 
->
+> Production is highest during the day because it needs photosynthesis. Respiration occurs roughly equally all the time. Dissolution 
 
 
 Visit https://data.streampulse.org/ 
