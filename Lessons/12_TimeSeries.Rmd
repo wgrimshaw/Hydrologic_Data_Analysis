@@ -133,7 +133,7 @@ Common interpolation methods:
 Linear interpolation is most common for water quality data, and fits with our understanding about how TP might change over time in this system. 
 ```{r}
 # Generate monthly values from July 1988 to August 2013
-# not that approx() does not automatically create a data frame
+# note that approx() does not automatically create a data frame
 linearinterpolation <- as.data.frame(approx(Mendotadata, n = 303, method = "linear"))
 # the first column reset to number of days since 1970 and needs to be corrected
 linearinterpolation$x <- as.Date(linearinterpolation$x, origin = "1970-01-01")
